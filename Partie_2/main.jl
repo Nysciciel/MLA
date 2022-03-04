@@ -4,6 +4,7 @@ using JuMP
 include("PL.jl")
 include("Benders.jl")
 
+
 global const eps = 1e-5
 
 function genere_instance(n::Int)
@@ -17,6 +18,7 @@ function genere_instance(n::Int)
         c[i] = rem(c[i-1]*c[1],61)
     end
     f[n+1] = 1
+
     return d, f, c
 end
 

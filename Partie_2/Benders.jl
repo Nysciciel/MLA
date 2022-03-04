@@ -7,6 +7,7 @@ Retourne
     - true, b, v si le pb est borné
     - fale, b, v si le pb est non borné (b et v forment un rayon)
 """
+
 function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=true)
 
     if resDirecte && sum(y) == d #Résolution directe
@@ -40,6 +41,7 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
         point2v = value.(v)
         
         return false, point1b-point2b, point1v-point2v
+
     end
 
     if has_values(sous_model)
@@ -58,11 +60,13 @@ Résoud le problème maître:
             w ≥ 0, y_i ∈ {0,1} ∀ i
 Retourne y* solution du pb
 """
+
 function benders_solve(n::Int, d::Int, f::Array{Int}, c::Array{Int}, resDirecte::Bool=true)
     
     start = time()
     model = Model(CPLEX.Optimizer)
     MOI.set(model, MOI.NumberOfThreads(), 1)
+
 
     @variable(model, y[1:n], Bin)
     @variable(model, w >=0, Int)
@@ -72,6 +76,7 @@ function benders_solve(n::Int, d::Int, f::Array{Int}, c::Array{Int}, resDirecte:
     
     @objective(model, Min, f'*[y; w])
     set_silent(model)
+
     
     while true
         optimize!(model)
@@ -80,10 +85,12 @@ function benders_solve(n::Int, d::Int, f::Array{Int}, c::Array{Int}, resDirecte:
         if status && value(w) >= d*b_val - value.(y)'*v_val - eps
             break
         elseif !status
+
             @constraint(model, d*b_val - y'*v_val <= 0)
             optimize!(model)
             continue
         end
+
         
         @constraint(model, w >= d*b_val - y'*v_val)
     end
@@ -136,4 +143,5 @@ function benders_solve_callback(n::Int, d::Int, f::Array{Int}, c::Array{Int}, re
         return nothing, nothing, +Inf, time()-start
     end
     return value.(y), value(w), objective_value(model), time()-start
+
 end

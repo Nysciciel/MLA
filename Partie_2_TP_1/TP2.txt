@@ -1,0 +1,23 @@
+Bonjour Monsieur,
+
+On a testé différentes méthodes avec CPLEX 12.10 et JUMP v0.21.10 
+(j'ai downgraded JUMP récemment car il y avait un bug avec la fonction 
+qui compte le nombre de noeuds dans le branch and bound.
+
+Voici les temps obtenus pour n = 50 000:
+	- Décomposition de Benders manuelle :	 		40s
+	- Modèle de base sans Benders : 			27s
+	- Modèle de base avec Benders automatique : 		4s
+	- Décomposition de Benders manuelle, sans PL : 		26s
+	- Décomposition de Benders manuelle, avec callbacks	118s
+
+Ce qui semble prendre le plus de temps, c'est lorsque le sous problème
+est non borné. C'est peut-être dû au fait qu'on doit lancer 2 fois 
+optimize!(). Ce qui pourrait être bien, c'est s'il existe une fonction
+JUMP qui donne le rayon directement à la place.
+
+La méthode avec callback semble être une mauvaise idée, car à chaque
+noeud du branch and bound où il trouve une solution entière, il 
+résoud potentiellement le cas non borné avec les 2 optimize!(). Ce qui
+ralentit fortement la résolution.
+

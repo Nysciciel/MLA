@@ -28,13 +28,13 @@ const d, f, c = genere_instance(n)
 # println("f = ", f)
 # println("c = ", c)
 
-println(" ----- BENDERS MANUELLE -----")
-y, w, obj, time_ = benders_solve(n,d,f,c, false)
-println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
+# println(" ----- BENDERS MANUELLE -----")
+# y, w, obj, time_ = benders_solve(n,d,f,c, false)
+# println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
 
-println("\n ----- SANS BENDERS -----")
-x, y, obj, time_ = solve_PL(n,d,f,c, false)
-println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
+# println("\n ----- SANS BENDERS -----")
+# x, y, obj, time_ = solve_PL(n,d,f,c, false)
+# println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
 
 println("\n ----- AUTOMATIC BENDERS -----")
 x, y, obj, time_ = solve_PL(n,d,f,c)
@@ -44,8 +44,8 @@ println(" ----- BENDERS MANUELLE SANS PL -----")
 y, w, obj, time_ = benders_solve(n,d,f,c)
 println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
 
-println(" ----- BENDERS CALLBACK -----")
-y, w, obj, time_ = benders_solve_callback(n,d,f,c)
-println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
+# println(" ----- BENDERS CALLBACK -----")
+# y, w, obj, time_ = benders_solve_callback(n,d,f,c)
+# println("Time \t Value\n", round(time_,digits=5), "\t ", round(obj,digits=5))
 
 

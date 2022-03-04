@@ -25,11 +25,9 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
     @objective(sous_model, Max, d*b - y'*v)
     
     optimize!(sous_model)
-    println(raw_status(sous_model))
+    
     if termination_status(sous_model) == MOI.INFEASIBLE_OR_UNBOUNDED
         
-        println("infeasible_or_unbounded")
-
         @constraint(sous_model, b+sum(v) <= 2000*d)
         optimize!(sous_model)
         point1b = value(b)
@@ -43,13 +41,6 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
         return false, point1b-point2b, point1v-point2v
 
     end
-
-    if has_values(sous_model)
-        return true, value(b), value.(v)
-    else
-        error("NO_SOLUTION")
-    end
-
 end
 
 """
@@ -73,6 +64,7 @@ function benders_solve(n::Int, d::Int, f::Array{Int}, c::Array{Int}, resDirecte:
     
     @constraint(model, y[1]>=y[2])
     @constraint(model, y[1]>=y[3])
+    @constraint(model, sum(y) == d)
     
     @objective(model, Min, f'*[y; w])
     set_silent(model)
@@ -110,6 +102,7 @@ function benders_solve_callback(n::Int, d::Int, f::Array{Int}, c::Array{Int}, re
     
     @constraint(model, y[1]>=y[2])
     @constraint(model, y[1]>=y[3])
+    @constraint(model, sum(y) == d)
     
     @objective(model, Min, f'*[y; w])
     set_silent(model)
@@ -124,7 +117,7 @@ function benders_solve_callback(n::Int, d::Int, f::Array{Int}, c::Array{Int}, re
             bounded, b_val, v_val = sous_pb(y_val,d,c, resDirecte)
 
             if bounded && callback_value(cb_data,w) >= d*b_val -y_val'*v_val - eps
-                println("end")
+                
             elseif !bounded
                 con = @build_constraint(d*b_val - (y'*v_val) <= 0)
                 println( )

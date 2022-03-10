@@ -22,7 +22,7 @@ function genere_instance(n::Int)
     return d, f, c
 end
 
-const n = 50000
+const n = 2999
 const d, f, c = genere_instance(n)
 # println("n = ", n, "\td = ", d)
 # println("f = ", f)

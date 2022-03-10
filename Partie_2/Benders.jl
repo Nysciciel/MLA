@@ -17,6 +17,8 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
 
     n = length(y)
     sous_model = Model(CPLEX.Optimizer)
+    set_optimizer_attribute(sous_model, "CPX_PARAM_PREIND", 0)
+    set_optimizer_attribute(sous_model, "CPX_PARAM_THREADS", 1)
     set_silent(sous_model)
 
     @variable(sous_model, b)
@@ -25,31 +27,7 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
     @objective(sous_model, Max, d*b - y'*v)
     
     optimize!(sous_model)
-    println(raw_status(sous_model))
-    if termination_status(sous_model) == MOI.INFEASIBLE_OR_UNBOUNDED
-        
-        println("infeasible_or_unbounded")
-
-        @constraint(sous_model, b+sum(v) <= 2000*d)
-        optimize!(sous_model)
-        point1b = value(b)
-        point1v = value.(v)
-        
-        @constraint(sous_model, b+sum(v) <= 1000*d)
-        optimize!(sous_model)
-        point2b = value(b)
-        point2v = value.(v)
-        
-        return false, point1b-point2b, point1v-point2v
-
-    end
-
-    if has_values(sous_model)
-        return true, value(b), value.(v)
-    else
-        error("NO_SOLUTION")
-    end
-
+    return raw_status(sous_model) != "unbounded", value(b), value.(v)
 end
 
 """
@@ -124,10 +102,8 @@ function benders_solve_callback(n::Int, d::Int, f::Array{Int}, c::Array{Int}, re
             bounded, b_val, v_val = sous_pb(y_val,d,c, resDirecte)
 
             if bounded && callback_value(cb_data,w) >= d*b_val -y_val'*v_val - eps
-                println("end")
             elseif !bounded
                 con = @build_constraint(d*b_val - (y'*v_val) <= 0)
-                println( )
                 MOI.submit(model, MOI.LazyConstraint(cb_data), con)
             else # callback_value(cb_data,w) < d*b_val - (y_val'*v_val)
                 con = @build_constraint( w >= d*b_val - (y'*v_val) )

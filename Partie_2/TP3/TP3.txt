@@ -65,8 +65,16 @@ benders2.txt    6.339   390     0/132   |   2.965       390     83/0    |   5.60
 benders3.txt    8.442   579     0/123   |   4.594       579     87/0    |   15.297      579     381/0   |   0.0    579
 benders4.txt    4.51    93      0/108   |   2.192       93      64/0    |   0.89        93      39/0    |   0.0    93
 
-
-
+=========================================================================================================================
+b = 3
+                NO RELAXATION    CUTS   |   WITH RELAXATION CUTS        |   NO BOUND_RAY    CUTS        |   DIJKSTRA
+                TIME    VALUE  RLXD/INT |   TIME    VALUE  RLXD/INT     |   TIME    VALUE  RLXD/INT     |   TIME    VALUE
+=========================================================================================================================
+hexagone        0.055   10      0/9     |   0.024       10      8/0     |   0.022       10      8/0     |
+benders1.txt    84.101  237     0/298   |   126.888     237     78/276  |   310.513     233     167/25  |
+benders2.txt    302.786 135     0/209   |   302.035     135     104/180 |   505.063     133     251/9   |
+benders3.txt    579.069 201     0/272   |   303.143     200     87/192  |   337.411     196     384/0   |
+benders4.txt    307.079 36      0/173   |   302.992     37      63/156  |   433.044     34      39/85   |
 
 Pour récupérer la valeur du rayon dans le sous problème, nous avons désactivé le présolve afin que CPLEX ne renvoit pas 
 INFEASIBLE_OR_UNBOUNDED.

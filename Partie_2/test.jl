@@ -7,8 +7,7 @@ n=3000
 opt = CPLEX.Optimizer()
 m = Model(() -> opt)
 set_optimizer_attribute(m, "CPX_PARAM_PREIND", 0)
-set_optimizer_attribute(m, "CPX_PARAM_THREADS", 1)
-#set_silent(m)
+set_optimizer_attribute(m, "CPX_PARAM_PARALLELMODE", -1)
 
 
 @variable(m, x[1:n]>=0)

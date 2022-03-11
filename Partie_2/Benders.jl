@@ -18,7 +18,7 @@ function sous_pb(y::Vector{Float64}, d::Int, c::Array{Int}, resDirecte::Bool=tru
     n = length(y)
     sous_model = Model(CPLEX.Optimizer)
     set_optimizer_attribute(sous_model, "CPX_PARAM_PREIND", 0)
-    set_optimizer_attribute(sous_model, "CPX_PARAM_THREADS", 1)
+    set_optimizer_attribute(sous_model, "CPX_PARAM_PARALLELMODE", -1)
     set_silent(sous_model)
 
     @variable(sous_model, b)

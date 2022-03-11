@@ -1,0 +1,69 @@
+===== Installer des liaisons dans un réseau ====
+
+Note préliminaire
+=================
+
+
+1. Dans un premier temps, nous avons implémenté la décomposition de Benders classique. 
+Lors de la résolution du sous-problème, il se peut que celui-ci soit non borné, dans ce cas, il faut récupérer le coefficient
+directeur du rayon. Afin que CPLEX ne renvoit pas le statut INFEASIBLE_OR_UNBOUNDED mais bien DUAL_INFEASIBLE, nous avons
+désactivé le présolve (comme vu dans le TP précédent). 
+
+
+Voici les résultats obtenus pour b = 1
+TIME_LIMIT = 300.0
+
+=========================================================================================================================
+b = 1
+                NO RELAXATION    CUTS   |   WITH RELAXATION CUTS        |   NO BOUND_RAY    CUTS        |   DIJKSTRA
+                TIME    VALUE  RLXD/INT |   TIME    VALUE  RLXD/INT     |   TIME    VALUE  RLXD/INT     |   TIME    VALUE
+=========================================================================================================================
+hexagone        0.828   21      0/8     |   0.025       21      8/0     |   0.022       21      8/0     |   0.0    21
+benders1.txt    3.133   688     0/69    |   2.374       688     78/0    |   4.376       688     167/0   |   0.0    688
+benders2.txt    6.339   390     0/132   |   2.965       390     83/0    |   5.606       390     231/0   |   0.0    390
+benders3.txt    8.442   579     0/123   |   4.594       579     87/0    |   15.297      579     381/0   |   0.0    579
+benders4.txt    4.51    93      0/108   |   2.192       93      64/0    |   0.89        93      39/0    |   0.0    93
+
+
+
+
+Pour récupérer la valeur du rayon dans le sous problème, nous avons désactivé le présolve afin que CPLEX ne renvoit pas 
+INFEASIBLE_OR_UNBOUNDED.
+La résolution doit alors démarrer avant que CPLEX ne prouve l'infaisabilité du dual.
+Les variables v et \nu sont alors instanciées et CPLEX renvoit le coefficient directeur du rayon.
+Les résultats pour cette méthode sont dans la première colonne "NO BOUND_RAY".
+
+
+Décomposition de Benders sans relaxation :
+===================================================
+Seule l'instance hexagone est résolue en temps raisonnable et renvoie la bonne 
+solution.
+Pour les instances plus grandes, la valeur de l'objectif au moment de l'arrêt est 
+plus faible qu'à l'optimum, on en déduit donc qu'il n'y a pas encore toutes les 
+coupes.
+
+Dans le tableau suivant on affiche la valeur de la solution trouvée ainsi que le 
+temps de résolution.
+
+Valeur; Temps
+b   Hexagone    Benders 1    Benders 2    Benders 3
+1   21; 0.92             
+3   10; 0.072       
+
+Décomposition de Benders avec relaxation:
+=============================================
+Dans une premier temps, on ajoute des coupes en résolvant le modèle continu. 
+Lors de la résolution du problème en variables entières, il y a donc déjà des 
+coupes générées et moins d'itérations sont alors nécessaires pour atteindre 
+l'optimum.
+
+Valeur; Temps
+b   Hexagone    Benders 1    Benders 2    Benders 3
+1   21; 0.758   688;
+3   10; 0.035   
+
+Résolution par Dijkstra:
+===================================================
+b   Hexagone    Benders 1    Benders 2    Benders 3
+1   
+

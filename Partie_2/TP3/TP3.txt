@@ -2,14 +2,55 @@
 
 Note préliminaire
 =================
+Dans le TP précédent, nous avions besoin de récupérer le coefficient directeur d'un rayon. Le problème est le suivant:
+CPLEX prouve que le problème est non borné ou infaisable lors du présolve. La résolution n'a alors pas démarré et il 
+est donc impossible d'accéder aux valeurs des variables. Pour contrer ce phénomène, nous avons désactivé le présolve.
+CPLEX renvoit alors le statut DUAL_INFEASIBLE (qui est plus précis que le précédent) et on a accès aux valeurs des 
+variables qui nous donnent directement le coefficient directeur du rayon en question. 
+Cette méthode s'est avérée fonctionnelle lors du TP précédent jusqu'à 3000 variables. En effet, après ce seuil, CPLEX
+active certains paramètres de calcul parallèle. Ce qui entraine une erreur lors de la résolution. Afin de palier à ce 
+problème, nous pouvons soit, n'autoriser qu'un seul thread, soit activer le parmètre "PARRALELMODE" de CPLEX sur la 
+valeur -1 ("opportuniste"). C'est cette dernière option que nous avons conservée puisque cela permet d'autoriser le 
+calcul parallèle lorsque c'est fait de façon sécurisée.
 
 
-1. Dans un premier temps, nous avons implémenté la décomposition de Benders classique. 
-Lors de la résolution du sous-problème, il se peut que celui-ci soit non borné, dans ce cas, il faut récupérer le coefficient
-directeur du rayon. Afin que CPLEX ne renvoit pas le statut INFEASIBLE_OR_UNBOUNDED mais bien DUAL_INFEASIBLE, nous avons
-désactivé le présolve (comme vu dans le TP précédent). 
 
+Décomposition de Benders classique (NO RELAXATION)
+==================================================
+Pour le problème de ce TP, nous avons implémenté la décomposition de Benders de façon classique. Dans ce cas-ci, Nous 
+avons conjecturé que pour le calcul d'un rayon, la résolution était plus rapide en bornant le polyhèdre. C'est cette
+méthode que nous avons selectionnée ici (tout en désactivant quand même le présolve). 
 
+Décomposition de Benders avec relaxation (WITH RELAXATION)
+==========================================================
+Pour cette méthode, nous appliquons l'algorithme de plans coupants au problème maître relaché (en continu). Une fois la 
+solution optimale continue trouvée, nous effectuons alors les nouvelles coupes sur le problème en nombres entiers. Cette
+méthode a l'avantage de générer un grand nombre de coupes en résolvant des problèmes continus compacts (ce qui est plus 
+rapide que les PLNE). 
+
+Valeur du rayon sans borner le polyhèdre (NO BOUND_RAY)
+=======================================================
+Tout en conservant la méthode de plans coupants par relaxation, nous avons également testé la méthode expliquée dans la 
+note préliminaire pour récupérer la valeur du rayon.
+
+Résolution par plus courts chemins (DIJKSTRA)
+=============================================
+Dans le cas où la bande passante est de 1, 
+Soit t un noeud terminal du graphe G. Afin de répondre à la demande d_t, la somme du flot entrant au noeud t doit être >= d_t.
+C'est-à-dire que chacun des chemins arrivant en t contriibuent (en terme de flot) à acheminer une partie de la demande.
+Sur l'un de ces chemins, on aura donc un flot disons de valeur f qui circule sur tous les arcs. En terme de cout, on va donc 
+payer nb_arcs * f. et ce sur chacun des chemins empruntés. On a donc tout intérêt à emprunter le chemin contenant le moins d'arc afin d'acheminer la totalié du flot.
+
+```` 
+Dijkstra : calcule un plus court chemin de s vers les terminaux. La distance sur chaque arc est de 1. Donc on cherche à 
+minimiser le nombre d'arcs utilisés sur le chemin de s à t. Or sur un arc i j yij = dt. Cela revient donc à minimiser 
+le nombre de yij emprunté ie la somme des yij.
+
+cout s-- > i
+```
+
+Résultats
+=========
 Voici les résultats obtenus pour b = 1
 TIME_LIMIT = 300.0
 

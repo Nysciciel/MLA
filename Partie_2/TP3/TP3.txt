@@ -37,21 +37,14 @@ Résolution par plus courts chemins (DIJKSTRA)
 =============================================
 Dans le cas où la bande passante est de 1, 
 Soit t un noeud terminal du graphe G. Afin de répondre à la demande d_t, la somme du flot entrant au noeud t doit être >= d_t.
-C'est-à-dire que chacun des chemins arrivant en t contriibuent (en terme de flot) à acheminer une partie de la demande.
-Sur l'un de ces chemins, on aura donc un flot disons de valeur f qui circule sur tous les arcs. En terme de cout, on va donc 
-payer nb_arcs * f. et ce sur chacun des chemins empruntés. On a donc tout intérêt à emprunter le chemin contenant le moins d'arc afin d'acheminer la totalié du flot.
-
-```` 
-Dijkstra : calcule un plus court chemin de s vers les terminaux. La distance sur chaque arc est de 1. Donc on cherche à 
-minimiser le nombre d'arcs utilisés sur le chemin de s à t. Or sur un arc i j yij = dt. Cela revient donc à minimiser 
-le nombre de yij emprunté ie la somme des yij.
-
-cout s-- > i
-```
+C'est-à-dire que chacun des chemins arrivant en t contribuent (en terme de flot) à acheminer une partie de la demande.
+Sur l'un de ces chemins, on aura donc un flot disons de valeur f qui circule sur tous les arcs. En terme de coût, on va 
+donc payer nb_arcs * f et ce sur chacun des chemins empruntés. On a donc tout intérêt à emprunter le chemin contenant 
+le moins d'arc afin d'acheminer la totalié du flot. On cherche donc un plus court chemin de s vers chacun des terminaux.
 
 Résultats
 =========
-Voici les résultats obtenus pour b = 1
+Voici les résultats obtenus
 TIME_LIMIT = 300.0
 
 =========================================================================================================================
@@ -65,6 +58,19 @@ benders2.txt    6.339   390     0/132   |   2.965       390     83/0    |   5.60
 benders3.txt    8.442   579     0/123   |   4.594       579     87/0    |   15.297      579     381/0   |   0.0    579
 benders4.txt    4.51    93      0/108   |   2.192       93      64/0    |   0.89        93      39/0    |   0.0    93
 
+Chacune des instances sont résolues dans le temps imparti.
+La méthode de résolution par plus courts chemins est de loin la plus rapide.
+La méthode par relaxation semble être environ deux fois plus rapide que sans la relaxation. On observe que la méthode par
+relaxation génère généralement moins de coupes et ces coupes toutes générées lors de la phase de relaxation. Il n'y a donc 
+qu'un MIP qui est résolu et donne la solution optimale.
+Quant à la méthode sans borner le polyhèdre, les résultats dépendent des instances. Il est globalement plus lent, voire 
+bien plus lent. Il y a également beaucoup plus de coupes (en relaxation) qui sont générées. Notons que pour ces deux 
+méthodes, le temps de résolution semble être proportionnel au nombre de coupes générées. Ce qui détermine les coupes 
+générées pour ces deux méthodes est en fait la valeur du rayon qui est renvoyée par le sous problème. Parfois, le fait
+de borner le polyhèdre donne un meilleur rayon, mais ce n'est pas un phénomène systématique.
+
+
+TIME_LIMIT = 300.0
 =========================================================================================================================
 b = 3
                 NO RELAXATION    CUTS   |   WITH RELAXATION CUTS        |   NO BOUND_RAY    CUTS        |   DIJKSTRA
@@ -76,43 +82,16 @@ benders2.txt    302.786 135     0/209   |   302.035     135     104/180 |   505.
 benders3.txt    579.069 201     0/272   |   303.143     200     87/192  |   337.411     196     384/0   |
 benders4.txt    307.079 36      0/173   |   302.992     37      63/156  |   433.044     34      39/85   |
 
-Pour récupérer la valeur du rayon dans le sous problème, nous avons désactivé le présolve afin que CPLEX ne renvoit pas 
-INFEASIBLE_OR_UNBOUNDED.
-La résolution doit alors démarrer avant que CPLEX ne prouve l'infaisabilité du dual.
-Les variables v et \nu sont alors instanciées et CPLEX renvoit le coefficient directeur du rayon.
-Les résultats pour cette méthode sont dans la première colonne "NO BOUND_RAY".
+Pour b=3, les temps de résolution sont bien plus importants pour les trois méthodes. Le temps imparti de 300 secondes n'est
+respecté que pour les instances "hexagone" et "benders1". Dans les autres cas, la solution renvoyée n'est donc pas la 
+solution optimale mais la meilleure borne inférieure rencontrée (étant donné les coupes déjà ajoutées) jusqu'à présent. 
+La solution renvoyée est donc potentiellement non réalisable. En effet, le programme peut être interrompu avant d'avoir
+ajouté toutes les coupes nécessaires. 
 
+Lorsque les temps sont bien supérieurs à 300, cela signifie que le programme était bloqué dans un MIP.
+Il y a généralement plus de coupes générées en bornant le polyhèdre tout en ayant une meilleure borne inférieure.
 
-Décomposition de Benders sans relaxation :
-===================================================
-Seule l'instance hexagone est résolue en temps raisonnable et renvoie la bonne 
-solution.
-Pour les instances plus grandes, la valeur de l'objectif au moment de l'arrêt est 
-plus faible qu'à l'optimum, on en déduit donc qu'il n'y a pas encore toutes les 
-coupes.
+PS: On aurait pu mieux gérer la limite de temps en restreignant la phase 2 (en nombres entiers) à respecter non pas le 
+temps limite total mais plutôt le temps restant.
 
-Dans le tableau suivant on affiche la valeur de la solution trouvée ainsi que le 
-temps de résolution.
-
-Valeur; Temps
-b   Hexagone    Benders 1    Benders 2    Benders 3
-1   21; 0.92             
-3   10; 0.072       
-
-Décomposition de Benders avec relaxation:
-=============================================
-Dans une premier temps, on ajoute des coupes en résolvant le modèle continu. 
-Lors de la résolution du problème en variables entières, il y a donc déjà des 
-coupes générées et moins d'itérations sont alors nécessaires pour atteindre 
-l'optimum.
-
-Valeur; Temps
-b   Hexagone    Benders 1    Benders 2    Benders 3
-1   21; 0.758   688;
-3   10; 0.035   
-
-Résolution par Dijkstra:
-===================================================
-b   Hexagone    Benders 1    Benders 2    Benders 3
-1   
-
+On espère que nos remarques vous auront plu. Nous avons beaucoup aimé votre cours, c'était très intéressant et instructif.
